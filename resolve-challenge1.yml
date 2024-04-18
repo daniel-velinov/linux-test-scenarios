@@ -5,7 +5,7 @@
   become: true
 
   vars:
-    localip: 192.168.170.69
+    localip: 192.168.159.50
 
   tasks:
   - name: Disable SELinux
@@ -23,8 +23,8 @@
   - name: Modify nginx conf listener
     ansible.builtin.lineinfile:
       path: /etc/nginx/nginx.conf
-      regexp: '{{ localip }}:80 default_server'
-      line: "        listen 80 default_server;"
+      regexp: '{{ localip }}:80;'
+      line: "        listen 80;"
     notify: restart nginx
 
   handlers:

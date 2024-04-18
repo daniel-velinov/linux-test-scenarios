@@ -1,11 +1,11 @@
 ---
 - hosts: localhost
   connection: local
-  gather_facts: false
+  gather_facts: true
   become: true
 
   vars:
-    localip: 192.168.170.69
+    localip: "{{ ansible_facts['all_ipv4_addresses'][1] }}"
 
   tasks:
   - name: install nginx
@@ -27,8 +27,8 @@
   - name: Modify nginx conf listener
     ansible.builtin.lineinfile:
       path: /etc/nginx/nginx.conf
-      regexp: 'listen\s+80 default_server;'
-      line: "        listen {{ localip }}:80 default_server;"
+      regexp: 'listen\s+80;'
+      line: "        listen {{ localip }}:80;"
     notify: restart nginx
 
   - name: Modify nginx conf root
