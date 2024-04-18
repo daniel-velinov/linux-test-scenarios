@@ -8,6 +8,9 @@
     localip: "{{ ansible_facts['all_ipv4_addresses'][1] }}"
     nginx_port: 8080/tcp
     port_only: 8080
+    services:
+      - nginx
+      - firewalld
 
   tasks:
   - name: install nginx
@@ -15,20 +18,23 @@
       name: nginx
       state: present
 
-  - name: Setup web folder
+  - name: Setup web root folder
     file:
       path: /var/www/html
       state: directory
       recurse: yes
+      owner: nobody
+      group: nobody
+      mode: 0760
 
   - name: Write HTML to index.html
     copy:
-      src: index.html
+      src: data/index.html
       dest: /var/www/html/index.html
  
   - name: Modify nginx config
     template:
-      src: nginx.conf.j2
+      src: data/nginx.conf.j2
       dest: /etc/nginx/nginx.conf
     notify: restart nginx
 
@@ -39,17 +45,18 @@
       line: "        root /var/www/html;"
     notify: restart nginx
 
-  - name: start nginx
+  - name: start services
     systemd:
-      name: nginx
+      name: "{{ item }}"
       state: started
+    loop: "{{ services }}"
 
   - name: Enable SELinux
     ansible.posix.selinux:
       policy: targeted
       state: enforcing
 
-  - name: disable http
+  - name: Block port on firewall
     ansible.posix.firewalld:
       port: "{{ nginx_port }}"
       permanent: true

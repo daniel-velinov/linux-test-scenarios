@@ -1,3 +1,4 @@
 # linux-test-scenarios
 
-Run ansible-playbook setup-challenge1.yml to break the linux box 
+Task 1:
+Run ansible-playbook task1-nginx-tshoot.yml to break the linux box
