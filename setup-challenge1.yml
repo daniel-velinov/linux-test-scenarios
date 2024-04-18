@@ -6,6 +6,8 @@
 
   vars:
     localip: "{{ ansible_facts['all_ipv4_addresses'][1] }}"
+    nginx_port: 8080/tcp
+    port_only: 8080
 
   tasks:
   - name: install nginx
@@ -23,12 +25,11 @@
     copy:
       src: index.html
       dest: /var/www/html/index.html
-
-  - name: Modify nginx conf listener
-    ansible.builtin.lineinfile:
-      path: /etc/nginx/nginx.conf
-      regexp: 'listen\s+80;'
-      line: "        listen {{ localip }}:80;"
+ 
+  - name: Modify nginx config
+    template:
+      src: nginx.conf.j2
+      dest: /etc/nginx/nginx.conf
     notify: restart nginx
 
   - name: Modify nginx conf root
@@ -50,7 +51,7 @@
 
   - name: disable http
     ansible.posix.firewalld:
-      service: http
+      port: "{{ nginx_port }}"
       permanent: true
       immediate: true
       state: disabled

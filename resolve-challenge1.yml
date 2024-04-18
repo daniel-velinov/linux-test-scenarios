@@ -1,11 +1,13 @@
 ---
 - hosts: localhost
   connection: local
-  gather_facts: false
+  gather_facts: true
   become: true
 
   vars:
-    localip: 192.168.159.50
+    localip: "{{ ansible_facts['all_ipv4_addresses'][0] }}"
+    nginx_port: 8080/tcp
+    port_only: 8080
 
   tasks:
   - name: Disable SELinux
@@ -15,16 +17,15 @@
 
   - name: enable http firewall
     ansible.posix.firewalld:
-      service: http
+      port: "{{ nginx_port }}"
       permanent: true
       immediate: true
       state: enabled
 
-  - name: Modify nginx conf listener
-    ansible.builtin.lineinfile:
-      path: /etc/nginx/nginx.conf
-      regexp: '{{ localip }}:80;'
-      line: "        listen 80;"
+  - name: Modify nginx config
+    template:
+      src: nginx.conf.j2
+      dest: /etc/nginx/nginx.conf
     notify: restart nginx
 
   handlers:
