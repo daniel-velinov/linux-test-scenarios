@@ -1,0 +1,24 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: true
+  become: true
+
+  vars:
+    localip: "{{ ansible_facts['eth0']['ipv4_secondaries'][0]['address'] }}"
+    nginx_port: 8080/tcp
+    port_only: 8080
+    services:
+      - nginx
+      - firewalld
+
+  tasks:
+  - name: Install stress
+    yum:
+      name: stress-ng
+      state: present
+    tags:
+    - yum
+
+  - name: Start stres test
+    shell: nohup stress-ng --cpu 1  > /dev/null 2>&1 &
